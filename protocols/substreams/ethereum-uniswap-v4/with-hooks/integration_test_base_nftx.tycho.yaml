@@ -1,0 +1,38 @@
+# NOTE: NFTX is currently deployed only on Base Sepolia (84532), which Tycho does
+# not yet support as a chain (no Chain::BaseSepolia, no harness endpoint). This
+# test is authored for parity and to be ready once Base Sepolia support is added
+# (or NFTX deploys to Base mainnet). It is NOT runnable today.
+substreams_yaml_path: ./base-sepolia-uniswap-v4-with-hooks.yaml
+# The balance check does not support vault-like contracts such as the Uniswap V4
+# PoolManager (a single contract holds the reserves of every pool).
+skip_balance_check: true
+protocol_type_names:
+  - "uniswap_v4_pool"
+protocol_system: "uniswap_v4_hooks"
+module_name: "map_nftx_enriched_protocol_changes"
+initialized_accounts:
+  - "0x05E73354cFDd6745C338b50BcFDfA3Aa6fA03408" # Uniswap V4 PoolManager (Base Sepolia)
+  - "0x32D550542268d22Ee1fD35d392780f4C729A2fCC" # NFTXV4Hook (Base Sepolia)
+tests:
+  # TODO(when runnable): replace the placeholders with a real NFTX collection pool.
+  #   - start_block / stop_block: a range covering the pool's Initialize plus a swap.
+  #   - id: the V4 pool id (bytes32); tokens: [flETH, CollectionToken]; creation_tx.
+  # Fixed static_attributes for every NFTX pool: tick_spacing 0x3c (60),
+  # key_lp_fee 0x00800000 (dynamic-fee flag), hooks = NFTXV4Hook,
+  # hook_identifier 0x6e6674785f7631 ("nftx_v1").
+  - name: test_nftx_pool_creation
+    start_block: 0 # TODO: pool Initialize block
+    stop_block: 0 # TODO: a few blocks later, covering a swap
+    expected_components:
+      - id: "0x0000000000000000000000000000000000000000000000000000000000000000" # TODO
+        tokens:
+          - "0xd2aec1992b576762726a4e0a201df18d28bf06a6" # flETH (Base Sepolia)
+          - "0x0000000000000000000000000000000000000000" # TODO: CollectionToken
+        static_attributes:
+          tick_spacing: "0x3c"
+          hooks: "0x32d550542268d22ee1fd35d392780f4c729a2fcc"
+          key_lp_fee: "0x00800000"
+          hook_identifier: "0x6e6674785f7631" # nftx_v1
+        creation_tx: "0x0000000000000000000000000000000000000000000000000000000000000000" # TODO
+        skip_simulation: false
+        skip_execution: true
